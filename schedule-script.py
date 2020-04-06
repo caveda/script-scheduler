@@ -80,9 +80,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Runs a script or executable with the given schedule.")
     parser.add_argument("task", nargs='?', help="Path to the script or application to run.")
     parser.add_argument("time", help="Time when the script shall be executed expressed in format: HH:MM")
-    parser.add_argument("--weekdays", help="Weeks of the day to execute expressed in numbers [0-6] where: \
+    parser.add_argument("--weekdays", help="Weeks of the day to execute the task expressed in numbers [0-6] where: \
                         0 is Sunday, 1 is Monday, and so forth.  e.g. 024 means Sundays,\
-                        Tuesdays and Thursdays. Default value is 0123456 which means everyday.",
+                        Tuesdays and Thursdays. Default value is 0123456 which means Everyday.",
                         default=EVERY_DAY)
     return parser.parse_args()
 

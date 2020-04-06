@@ -1,4 +1,5 @@
 import logging
+from logging import handlers
 
 LOG_FILENAME = "scheduler.log"
 logger = logging.getLogger(LOG_FILENAME)
