@@ -23,13 +23,7 @@ def run_task(task):
         log("Execution skipped")
         return
     log(f"Executing {task}")
-    current_path = os.getcwd()
-    task_path = os.path.dirname(task)
-    task_file = os.path.basename(task)
-    if task_path is not '.' and task_path is not '':
-        os.chdir(task_path)
-    result = os.system(task_file)
-    os.chdir(current_path)
+    result = os.system(task)
     log(f"Execution result: {result}")
 
 
