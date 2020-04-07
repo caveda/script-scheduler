@@ -17,9 +17,8 @@ def init_logging():
         LOG_FILENAME, maxBytes=MAX_SIZE_ROTATION, backupCount=5)
 
     logger.addHandler(rotation_handler)
-    return logger
 
 
 def log(msg):
     """ Writes msg in the logger output."""
-    logging.info(msg)
+    logger.info(msg)

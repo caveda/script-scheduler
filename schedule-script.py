@@ -3,9 +3,8 @@ import os
 import re
 import time
 from os import path
-
+from datetime import datetime
 import schedule
-
 from logger import init_logging, log
 
 LOG_FILENAME = "schedule-script.log"
@@ -19,18 +18,27 @@ SATURDAY = "6"
 EVERY_DAY = SUNDAY + MONDAY + TUESDAY + WEDNESDAY + THURSDAY + FRIDAY + SATURDAY
 
 
-def run_task(task_file):
-    if not validate_task(task_file):
-        log(f"Execution skipped")
+def run_task(task):
+    if not validate_task(task):
+        log("Execution skipped")
         return
-    os.system(task_file)
+    log(f"Executing {task}")
+    current_path = os.getcwd()
+    task_path = os.path.dirname(task)
+    task_file = os.path.basename(task)
+    if task_path is not '.' and task_path is not '':
+        os.chdir(task_path)
+    result = os.system(task_file)
+    os.chdir(current_path)
+    log(f"Execution result: {result}")
 
 
 def validate_task(task_file):
     """ Validates task file """
-    valid = path.exits(task_file) and path.isfile(task_file)
+    valid = path.exists(task_file) and path.isfile(task_file)
     if not valid:
         log(f"File {task_file} does not exists!!")
+    return valid
 
 
 def validate_weekdays(weekdays):
@@ -40,10 +48,11 @@ def validate_weekdays(weekdays):
         log(f"Invalid weekdays format: {weekdays}!!")
     return result
 
+
 def validate_time(time):
     """ Validates time format """
     try:
-        time.strptime(input, '%H:%M')
+        datetime.strptime(time, '%H:%M')
         return True
     except ValueError:
         log(f"Invalid time format: {time}!!")
@@ -57,28 +66,35 @@ def set_schedule(time, weekdays, task):
             not validate_time(time):
         return False
 
-    job = schedule.every()
+    if weekdays == EVERY_DAY:
+        schedule.every().day.at(time).do(run_task, task)
+    else:
+        schedule_only_some_days(task, time, weekdays)
+    return True
+
+
+def schedule_only_some_days(task, time, weekdays):
+    """ Schedule the task only some specific days """
     if SUNDAY in weekdays:
-        job = job.sunday()
+        schedule.every().sunday.at(time).do(run_task, task)
     if MONDAY in weekdays:
-        job = job.monday()
+        schedule.every().monday.at(time).do(run_task, task)
     if TUESDAY in weekdays:
-        job = job.tuesday()
+        schedule.every().tuesday.at(time).do(run_task, task)
     if WEDNESDAY in weekdays:
-        job = job.wednesday()
+        schedule.every().wednesday.at(time).do(run_task, task)
     if THURSDAY in weekdays:
-        job = job.thursday()
+        schedule.every().thursday.at(time).do(run_task, task)
     if FRIDAY in weekdays:
-        job = job.friday()
+        schedule.every().friday.at(time).do(run_task, task)
     if SATURDAY in weekdays:
-        job = job.saturday()
-    job.at(time).do(task)
+        schedule.every().saturday.at(time).do(run_task, task)
 
 
 def parse_arguments():
     """ Digests arguments """
     parser = argparse.ArgumentParser(description="Runs a script or executable with the given schedule.")
-    parser.add_argument("task", nargs='?', help="Path to the script or application to run.")
+    parser.add_argument("task", help="Path to the script or application to run.")
     parser.add_argument("time", help="Time when the script shall be executed expressed in format: HH:MM")
     parser.add_argument("--weekdays", help="Weeks of the day to execute the task expressed in numbers [0-6] where: \
                         0 is Sunday, 1 is Monday, and so forth.  e.g. 024 means Sundays,\
@@ -92,8 +108,9 @@ def main():
     init_logging()
     args = parse_arguments()
     if not set_schedule(args.time, args.weekdays, args.task):
+        log("Arguments are not valid. Exit")
         exit(-1)
-
+    log("Task scheduled")
     while True:
         schedule.run_pending()
         time.sleep(60)
