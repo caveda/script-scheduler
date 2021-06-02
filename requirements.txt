@@ -22,5 +22,5 @@ requests-toolbelt==0.7.0
 rsa==4.0
 schedule==0.6.0
 six==1.11.0
-urllib3==1.24.3
+urllib3==1.26.5
 wrapt==1.10.11
